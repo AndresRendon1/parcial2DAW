@@ -11,33 +11,36 @@ const pokemonAbilitiesElement = document.querySelector('.pokemonAbilities');
 const containerEvolution = document.querySelector('.containerEvolution');
 
 searchButton.addEventListener('click', async () => {
-  const pokemonName = pokemonInput.value.trim();
-  if (pokemonName) {
-    try {
-      const response = await axios.get(`${apiUrl}/pokemon/${pokemonName}`);
-      const pokemonData = response.data;
-      displayPokemonInfo(pokemonData);
-    } catch (error) {
+    const pokemonName = pokemonInput.value.trim();
+    if (pokemonName) {
+      try {
+        const pokemonResponse = await axios.get(`${apiUrl}/pokemon/${pokemonName}`);
+        const pokemonSpeciesResponse = await axios.get(`${apiUrl}/pokemon-species/${pokemonName}`);
+        
+        const pokemonData = pokemonResponse.data;
+        const pokemonSpeciesData = pokemonSpeciesResponse.data;
+  
+        const description = pokemonSpeciesData.flavor_text_entries.find(
+          entry => entry.language.name === 'en'
+        ).flavor_text.replace(/(\r\n|\n|\r)/gm, ' ');
+  
+        displayPokemonInfo(pokemonData, description);
+      } catch (error) {
+        displayError();
+      }
+    } else {
       displayError();
     }
-  } else {
-    displayError();
+  });
+  
+  function displayPokemonInfo(pokemonData, description) {
+    containerError.style.display = 'none';
+    containerInfo.style.display = 'flex';
+    pokemonNameElement.textContent = pokemonData.name;
+    pokemonImgElement.src = pokemonData.sprites.front_default;
+    pokemonTypeElement.textContent = pokemonData.types.map(type => type.type.name).join(', ');
+    pokemonDescriptionElement.textContent = description;
+    pokemonAbilitiesElement.textContent = pokemonData.abilities.map(ability => ability.ability.name).join(', ');
+    containerEvolution.style.display = 'flex';
   }
-});
-
-function displayPokemonInfo(pokemonData) {
-  containerError.style.display = 'none';
-  containerInfo.style.display = 'flex';
-  pokemonNameElement.textContent = pokemonData.name;
-  pokemonImgElement.src = pokemonData.sprites.front_default;
-  pokemonTypeElement.textContent = pokemonData.types.map(type => type.type.name).join(', ');
-  pokemonDescriptionElement.textContent = pokemonData.description;
-  pokemonAbilitiesElement.textContent = pokemonData.abilities.map(ability => ability.ability.name).join(', ');
-  containerEvolution.style.display = 'flex';
-}
-
-function displayError() {
-  containerError.style.display = 'flex';
-  containerInfo.style.display = 'none';
-  containerEvolution.style.display = 'none';
-}
+  
