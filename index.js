@@ -70,15 +70,43 @@ async function displayEvolutions(evolutionChainData) {
         const pokemonResponse = await axios.get(`${apiUrl}/pokemon/${pokemonName}`);
         const pokemonData = pokemonResponse.data;
 
-        // Actualizar la información mostrada en la interfaz de usuario
+        // Crear un botón para mostrar la siguiente evolución
+        const nextButton = document.createElement('button');
+        nextButton.textContent = 'Siguiente Evolución';
+        nextButton.addEventListener('click', async () => {
+            currentPokemon = currentPokemon.evolves_to[0]; // Avanzar a la siguiente evolución
+            if (currentPokemon) {
+                const pokemonResponse = await axios.get(`${apiUrl}/pokemon/${currentPokemon.species.name}`);
+                const pokemonData = pokemonResponse.data;
+                // Actualizar la información mostrada en la interfaz de usuario
+                pokemonNameElement.textContent = pokemonData.name;
+                pokemonImgElement.src = pokemonData.sprites.front_default;
+                pokemonTypeElement.textContent = pokemonData.types.map(type => type.type.name).join(', ');
+                pokemonAbilitiesElement.textContent = pokemonData.abilities.map(ability => ability.ability.name).join(', ');
+            }
+        });
+
+        // Agregar el botón a la sección de evoluciones
+        containerEvolution.appendChild(nextButton);
+
+        // Mostrar la primera evolución
         pokemonNameElement.textContent = pokemonData.name;
         pokemonImgElement.src = pokemonData.sprites.front_default;
         pokemonTypeElement.textContent = pokemonData.types.map(type => type.type.name).join(', ');
         pokemonAbilitiesElement.textContent = pokemonData.abilities.map(ability => ability.ability.name).join(', ');
 
-        currentPokemon = currentPokemon.evolves_to[0]; // Avanzar a la siguiente evolución
+        // Salir del bucle si no hay más evoluciones
+        if (!currentPokemon.evolves_to.length) {
+            break;
+        }
+
+        // Esperar hasta que se haga clic en el botón "Siguiente Evolución"
+        await new Promise(resolve => {
+            nextButton.addEventListener('click', resolve, { once: true });
+        });
     }
 }
+
 
 function displayError() {
     containerInfo.style.display = 'none';
