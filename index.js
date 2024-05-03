@@ -10,6 +10,8 @@ const pokemonTypeElement = document.querySelector('.pokemonType');
 const pokemonDescriptionElement = document.querySelector('.pokemonDescrition');
 const pokemonAbilitiesElement = document.querySelector('.pokemonAbilities');
 const containerEvolution = document.querySelector('.containerEvolution');
+const nextButton = document.createElement('button');
+nextButton.textContent = 'Siguiente Evolución';
 
 searchButton.addEventListener('click', async () => {
     const pokemonName = pokemonInput.value.trim();
@@ -70,35 +72,21 @@ function displayPokemonInfo(pokemonData, description) {
 async function displayEvolutions(evolutionChainData) {
     containerEvolution.innerHTML = ''; // Limpiar la sección de evoluciones
     let currentPokemon = evolutionChainData;
+
     while (currentPokemon) {
         const pokemonName = currentPokemon.species.name;
         const pokemonResponse = await axios.get(`${apiUrl}/pokemon/${pokemonName}`);
         const pokemonData = pokemonResponse.data;
-
-        // Crear un botón para mostrar la siguiente evolución
-        const nextButton = document.createElement('button');
-        nextButton.textContent = 'Siguiente Evolución';
-        nextButton.addEventListener('click', async () => {
-            currentPokemon = currentPokemon.evolves_to[0]; // Avanzar a la siguiente evolución
-            if (currentPokemon) {
-                const pokemonResponse = await axios.get(`${apiUrl}/pokemon/${currentPokemon.species.name}`);
-                const pokemonData = pokemonResponse.data;
-                // Actualizar la información mostrada en la interfaz de usuario
-                pokemonNameElement.textContent = pokemonData.name;
-                pokemonImgElement.src = pokemonData.sprites.front_default;
-                pokemonTypeElement.textContent = pokemonData.types.map(type => type.type.name).join(', ');
-                pokemonAbilitiesElement.textContent = pokemonData.abilities.map(ability => ability.ability.name).join(', ');
-            }
-        });
-
-        // Agregar el botón a la sección de evoluciones
-        containerEvolution.appendChild(nextButton);
 
         // Mostrar la primera evolución
         pokemonNameElement.textContent = pokemonData.name;
         pokemonImgElement.src = pokemonData.sprites.front_default;
         pokemonTypeElement.textContent = pokemonData.types.map(type => type.type.name).join(', ');
         pokemonAbilitiesElement.textContent = pokemonData.abilities.map(ability => ability.ability.name).join(', ');
+
+        // Mostrar el botón de evolución si aún hay evoluciones disponibles
+        containerEvolution.appendChild(nextButton);
+        containerEvolution.style.display = currentPokemon.evolves_to.length ? 'flex' : 'none';
 
         // Salir del bucle si no hay más evoluciones
         if (!currentPokemon.evolves_to.length) {
@@ -109,6 +97,9 @@ async function displayEvolutions(evolutionChainData) {
         await new Promise(resolve => {
             nextButton.addEventListener('click', resolve, { once: true });
         });
+
+        // Avanzar a la siguiente evolución
+        currentPokemon = currentPokemon.evolves_to[0];
     }
 }
 
