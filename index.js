@@ -16,9 +16,9 @@ searchButton.addEventListener('click', async () => {
     if (pokemonName) {
         try {
             const pokemonResponse = await axios.get(`${apiUrl}/pokemon/${pokemonName}`);
-            const pokemonSpeciesResponse = await axios.get(`${apiUrl}/pokemon-species/${pokemonName}`);
-            
             const pokemonData = pokemonResponse.data;
+
+            const pokemonSpeciesResponse = await axios.get(`${apiUrl}/pokemon-species/${pokemonData.id}`);
             const pokemonSpeciesData = pokemonSpeciesResponse.data;
 
             const description = pokemonSpeciesData.flavor_text_entries.find(
@@ -38,10 +38,15 @@ evolutionButton.addEventListener('click', async () => {
     const pokemonName = pokemonInput.value.trim();
     if (pokemonName) {
         try {
-            const pokemonSpeciesResponse = await axios.get(`${apiUrl}/pokemon-species/${pokemonName}`);
+            const pokemonResponse = await axios.get(`${apiUrl}/pokemon/${pokemonName}`);
+            const pokemonData = pokemonResponse.data;
+
+            const pokemonSpeciesResponse = await axios.get(`${apiUrl}/pokemon-species/${pokemonData.id}`);
             const pokemonSpeciesData = pokemonSpeciesResponse.data;
+
             const evolutionChainResponse = await axios.get(pokemonSpeciesData.evolution_chain.url);
             const evolutionChainData = evolutionChainResponse.data.chain;
+
             displayEvolutions(evolutionChainData);
         } catch (error) {
             displayError();
@@ -106,7 +111,6 @@ async function displayEvolutions(evolutionChainData) {
         });
     }
 }
-
 
 function displayError() {
     containerInfo.style.display = 'none';
